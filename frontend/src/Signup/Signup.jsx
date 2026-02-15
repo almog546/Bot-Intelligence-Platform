@@ -3,6 +3,7 @@ import * as yup from 'yup';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import { Link } from 'react-router-dom';
 
 export default function Signup() {
     const [name, setName] = useState('');
@@ -84,6 +85,9 @@ export default function Signup() {
                 {error && <p className={styles.error}>{error}</p>}
                 <button type="submit" className={styles.button}>Sign Up</button>
             </form>
+            <p className={styles.loginText}>
+                Already have an account? <Link to="/login" className={styles.loginLink}>Log In</Link>
+            </p>
         </div>
     
     </>

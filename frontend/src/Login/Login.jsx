@@ -1,14 +1,13 @@
 import styles from './Login.module.css';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import { Link } from 'react-router-dom';
 
 
 export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
-    const navigate = useNavigate();
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -18,7 +17,7 @@ export default function Login() {
                     username,
                     password,
                 });
-                navigate('/');
+                window.location.replace('/');
             } catch (err) {
                 setError(
                     'Login failed: ' + (err.response?.data?.message || err.message)
@@ -46,7 +45,12 @@ export default function Login() {
                 />
                 {error && <p className={styles.error}>{error}</p>}
                 <button type="submit" className={styles.button}>Login</button>
+            
+
             </form>
+            <p className={styles.loginText}>
+                Don't have an account? <Link to="/signup" className={styles.loginLink}>Sign Up</Link>
+            </p>
         </div>
     );
 }

@@ -6,7 +6,7 @@
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    background: var(--bg-gradient);
+   
     padding: 20px;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
@@ -85,6 +85,19 @@
     border: 1px solid #fee2e2;
     margin: 0;
     text-align: center;
+}
+.loginText {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: 1rem;
+    text-align: center;
+}
+.loginLink {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    position: relative;
 }
 
 
