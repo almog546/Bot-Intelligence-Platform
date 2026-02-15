@@ -38,7 +38,7 @@ export default function Signup() {
             password,
         });
 
-        navigate('/');
+        navigate('/login');
     } catch (err) {
         if (err.name === 'ValidationError') {
             setError(err.message);
