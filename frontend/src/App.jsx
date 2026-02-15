@@ -8,6 +8,7 @@ import Dashboard from './Dashboard/Dashboard.jsx';
 import api from './api/axios';
 import Compare from './Compare/Compare.jsx';
 import Settings from './Settings/Settings.jsx';
+import AddStrategy from './addStrategy/addStrategy.jsx';
 
 
 
@@ -65,6 +66,7 @@ if (loading) {
     <Route path="/" element={user ? <Dashboard /> : <Login />} />
     <Route path="/compare" element={user ? <Compare /> : <Login />} />
     <Route path="/settings" element={user ? <Settings /> : <Login />} />
+    <Route path="/add-strategy" element={user ? <AddStrategy /> : <Login />} />
      </Routes>
     </>
   )

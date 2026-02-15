@@ -14,4 +14,15 @@ model User {
   password  String
   createdAt DateTime      @default(now())
 
+  strategies strategy[]
+
+}
+model strategy {
+  id        String        @id @default(cuid())
+  fileName  String
+  fileUrl   String
+  createdAt DateTime      @default(now())
+
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
 }

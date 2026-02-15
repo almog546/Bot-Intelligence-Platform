@@ -1,11 +1,15 @@
 import styles from './Dashboard.module.css';
+import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
+    const navigate = useNavigate();
+
+   function handleAddStrategy() {
+        navigate('/add-strategy');
+    }
     return (
         <div className={styles.container}>
-            <h2>Welcome to the Bot Intelligence Platform Dashboard</h2>
-            <p>Here you can manage your bots, view analytics, and access various tools to enhance your bot's performance.</p>
-            <p>Use the navigation menu to explore different sections of the platform.</p>
+           <button onClick={handleAddStrategy} className={styles.addButton}>Add Strategy</button>
         </div>
     );
 }
