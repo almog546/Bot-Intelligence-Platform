@@ -1,6 +1,8 @@
 .container {
+    height: 100vh;
     padding: 20px;
     text-align: center;
+    background: var(--bg-gradient);
 }
 
 .addButton {

@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
+import styles from "./AddStrategy.module.css";
 
 export default function UploadStrategy() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [name, setName] = useState("");
   const [error, setError] = useState("");
+  
   const navigate = useNavigate();
 
   function handleFileChange(e) {
@@ -29,8 +31,8 @@ export default function UploadStrategy() {
       );
      
 
-      const { strategyId } = response.data;
-      navigate(`/strategy/${strategyId}`);
+      
+      navigate(`/`);
 
     } catch (err) {
       setError(
@@ -40,21 +42,23 @@ export default function UploadStrategy() {
   }
 
   return (
-    <div>
+    <div className={styles.container}>
+      
 
-      <h2>Upload Strategy</h2>
+      <h2 className={styles.title}>Upload Strategy</h2>
       <form action="" onSubmit={handleUpload}>
         <input
           type="text"
           placeholder="Strategy Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          className={styles.input}
         />
 
-      <input type="file" accept=".csv" onChange={handleFileChange} />
-      <button >Upload</button>
+      <input type="file" accept=".csv" onChange={handleFileChange} className={styles.fileInput} />
+      <button type="button" onClick={handleUpload} className={styles.uploadButton}>Upload</button>
 
-      {error && <p>{error}</p>}
+      {error && <p className={styles.error}>{error}</p>}
       </form>
     </div>
   );

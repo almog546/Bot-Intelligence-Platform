@@ -36,7 +36,7 @@ export default function Dashboard() {
                     <div key={strategy.id} className={styles.strategyCard}>
                         <h2>{strategy.name}</h2>
                         <p>Total Trades: {strategy.totalTrades}</p>
-                        <p>Net Profit: {strategy.netProfit}</p>
+                        <p>Net Profit: {strategy.netProfit.toFixed(2)}</p>
                         <p>Win Rate: {strategy.winRate.toFixed(2)}%</p>
                         <p>Created At: {new Date(strategy.createdAt).toLocaleDateString()}</p>
                     </div>
