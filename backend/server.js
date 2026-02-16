@@ -26,6 +26,7 @@ app.use(
     }),
 );
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use("/api/strategies", require("./routes/strategyRoutes"));
 
 app.use((err, req, res, next) => {
     console.error('Error:', err.message);

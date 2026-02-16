@@ -14,15 +14,19 @@ model User {
   password  String
   createdAt DateTime      @default(now())
 
-  strategies strategy[]
+  strategies Strategy[]
 
 }
-model strategy {
-  id        String        @id @default(cuid())
-  fileName  String
-  fileUrl   String
-  createdAt DateTime      @default(now())
+model Strategy {
+  id           String   @id @default(cuid())
+  name         String
+  totalTrades  Int
+  netProfit    Float
+  winRate      Float
+  fileName     String
+  fileUrl      String?
+  userId       String
+  createdAt    DateTime @default(now())
 
-  userId    String
-  user      User          @relation(fields: [userId], references: [id])
+  user         User     @relation(fields: [userId], references: [id])
 }
