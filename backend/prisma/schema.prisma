@@ -31,4 +31,12 @@ model Strategy {
   createdAt    DateTime @default(now())
 
   user         User     @relation(fields: [userId], references: [id])
+  trades       Trade[]
+}
+model Trade {
+  id          String   @id @default(cuid())
+  date        DateTime
+  netProfit   Float
+  strategy    Strategy @relation(fields: [strategyId], references: [id])
+  strategyId  String
 }

@@ -3,102 +3,119 @@ const csv = require("csv-parse/sync");
 
 async function uploadStrategy(req, res) {
   try {
-    
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-   
     const fileContent = req.file.buffer.toString("utf8");
 
     
     const records = csv.parse(fileContent, {
-      columns: true,
+      columns: header =>
+        header.map(h =>
+          h.trim().toLowerCase().replace(/\s+/g, "")
+        ),
       skip_empty_lines: true,
     });
 
-    const totalTrades = records.length;
+    
+    const normalizedRecords = records.map(row => ({
+      date: row.date,
+      netProfit: Number(row.netprofit),
+    }));
 
-    const netProfit = records.reduce((acc, trade) => {
-      return acc + Number(trade.netProfit);
-    }, 0);
+    
+    const cleanRecords = normalizedRecords.filter(
+      trade =>
+        trade.date &&
+        !isNaN(trade.netProfit)
+    );
 
-    const winTrades = records.filter(
-      (trade) => Number(trade.netProfit) > 0
+    if (cleanRecords.length === 0) {
+      return res.status(400).json({ message: "No valid trades found" });
+    }
+
+    
+    cleanRecords.sort(
+      (a, b) => new Date(a.date) - new Date(b.date)
+    );
+
+    const totalTrades = cleanRecords.length;
+
+    const netProfit = cleanRecords.reduce(
+      (acc, trade) => acc + trade.netProfit,
+      0
+    );
+
+    const winTrades = cleanRecords.filter(
+      trade => trade.netProfit > 0
     ).length;
 
     const winRate =
       totalTrades > 0 ? (winTrades / totalTrades) * 100 : 0;
-      const userId = req.session.userId;
 
-      const name = req.body.name ;
-      function calculateMaxDrawdown(records) {
-       let equity = 0;
-       let peak = 0;
-       let worst = 0;
-        for (const trade of records) {
-          equity += Number(trade.netProfit);
-          if (equity > peak) {
-            peak = equity;
-          }
-          const drawdown = peak - equity;
-          if (drawdown > worst) {
-            worst = drawdown;
-          }
-        }
-        return worst;
-      }
-      const maxDrawdown = calculateMaxDrawdown(records);
+    const userId = req.session.userId;
+    const name = req.body.name || "Unnamed Strategy";
 
-      function calculateEquityCurve(records) {
-        let equity = 0;
-       return records.map((trade) => {
-          equity += Number(trade.netProfit);
-         return{
-          equity,
-          date : trade.date,
-        }
-        }
-        );
-      }
     
-      
+    function calculateMaxDrawdown(records) {
+      let equity = 0;
+      let peak = 0;
+      let worst = 0;
 
-      
-      
+      for (const trade of records) {
+        equity += trade.netProfit;
 
+        if (equity > peak) peak = equity;
+
+        const drawdown = peak - equity;
+
+        if (drawdown > worst) worst = drawdown;
+      }
+
+      return worst;
+    }
+
+    const maxDrawdown = calculateMaxDrawdown(cleanRecords);
+
+    
     const strategy = await prisma.strategy.create({
-      data: {  
-       name,
+      data: {
+        name,
         totalTrades,
         netProfit,
         winRate,
-        maxDrawdown: Number(maxDrawdown),
+        maxDrawdown,
         fileName: req.file.originalname,
         fileUrl: "",
         createdAt: new Date(),
         user: { connect: { id: userId } },
-
       },
-
-
     });
 
-    
-    res.json({
+   
+    await prisma.trade.createMany({
+      data: cleanRecords.map(trade => ({
+        date: new Date(trade.date),
+        netProfit: trade.netProfit,
+        strategyId: strategy.id,
+      })),
+    });
+
+    res.status(201).json({
       strategyId: strategy.id,
       totalTrades,
       netProfit,
       winRate,
       maxDrawdown,
-     
     });
 
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message });
   }
-};
+}
+
 
 async function getStrategies(req, res) {
     const userId = req.session.userId;
@@ -115,8 +132,13 @@ async function getStrategies(req, res) {
             netProfit: true,
             winRate: true,
             maxDrawdown: true,
-            
             createdAt: true,
+            trades: {
+                select: {
+                    date: true,
+                    netProfit: true,
+                }
+            },
         },
     });
     res.status(200).json({ strategies });
@@ -126,9 +148,20 @@ async function getStrategies(req, res) {
 }
 }
 
+async function getStrategyTrades(req, res) {
+  const { id } = req.params;
+
+  const trades = await prisma.trade.findMany({
+    where: { strategyId: id },
+    orderBy: { date: "asc" },
+  });
+
+  res.json(trades);
+}
 
 module.exports = {
     getStrategies,
     uploadStrategy,
+    getStrategyTrades,
     
 };

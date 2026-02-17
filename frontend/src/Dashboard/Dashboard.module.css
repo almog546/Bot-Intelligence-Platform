@@ -121,6 +121,14 @@
     border: 2px dashed #cbd5e1;
     color: var(--text-muted);
 }
+.chartContainer {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    height: 400px;
+    margin-bottom: 40px;
+}
 
 
 @media (max-width: 768px) {
@@ -133,4 +141,5 @@
     .summary {
         grid-template-columns: 1fr;
     }
+    
 }

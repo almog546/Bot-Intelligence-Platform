@@ -1,9 +1,10 @@
 import { use } from 'react';
 import styles from './Dashboard.module.css';
-import { data, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { Line } from "react-chartjs-2";
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -12,6 +13,7 @@ import {
   LineElement,
   Tooltip,
   Legend,
+  
 } from "chart.js";
 
 ChartJS.register(
@@ -21,6 +23,7 @@ ChartJS.register(
   LineElement,
   Tooltip,
   Legend
+  
 );
 
 
@@ -45,6 +48,8 @@ export default function Dashboard() {
 
         fetchStrategies();
     }, []);
+
+
    function handleAddStrategy() {
         navigate('/add-strategy');
     }
@@ -57,6 +62,61 @@ export default function Dashboard() {
     function totalNetProfit() {
         return strategies.reduce((total, strategy) => total + strategy.netProfit, 0).toFixed(2);
     }
+    
+    function getAllTrades() {
+        const allTrades = [];
+        strategies.forEach(strategy => {
+            if (strategy.trades && Array.isArray(strategy.trades)) {
+                strategy.trades.forEach(trade => {
+                    allTrades.push(trade);
+                });
+            }
+        });
+        return allTrades.sort((a, b) => new Date(a.date) - new Date(b.date));
+    }
+    
+    function calculateEquityCurve(trades) {
+        let equity = 0;
+        return trades.map(trade => {
+            equity += Number(trade.netProfit);
+            return {
+                date: new Date(trade.date).toLocaleDateString(),
+                equity,
+            };
+        });
+    }
+    
+    const allTrades = getAllTrades();
+    const equityData = calculateEquityCurve(allTrades);
+
+    const chartData = {
+        labels: equityData.map(point => point.date),
+        datasets: [
+            {
+                label: "Equity",
+                data: equityData.map(point => point.equity),
+               borderColor: "#10b981",
+                backgroundColor: "rgba(16, 185, 129, 0.1)",
+                tension: 0.4, 
+               
+            },
+        ],
+    };
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+        },
+        scales: {
+            y: { grid: { color: '#f1f5f9' } },
+            x: { grid: { display: false } }
+        }
+    };
+
+
+
+
     
 
 
@@ -102,7 +162,9 @@ export default function Dashboard() {
                 </div>
                 
             ))}
-         
+            <div className={styles.chartContainer}>
+            {allTrades.length > 0 && <Line data={chartData} options={chartOptions} />}
+         </div>
         </div>
     );
 }
