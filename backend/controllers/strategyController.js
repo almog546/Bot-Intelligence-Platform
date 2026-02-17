@@ -158,10 +158,28 @@ async function getStrategyTrades(req, res) {
 
   res.json(trades);
 }
+async function getStrategy(req, res) {
+    const { id } = req.params;
+
+    const strategy = await prisma.strategy.findUnique({
+      where: { id: id },
+      include: {
+        trades: {
+          orderBy: { date: "asc" },
+        },
+      },
+    });
+    
+    if (!strategy) {
+      return res.status(404).json({ message: "Strategy not found" });
+    }
+
+    res.json(strategy);
+}
 
 module.exports = {
     getStrategies,
     uploadStrategy,
     getStrategyTrades,
-    
+    getStrategy,
 };
