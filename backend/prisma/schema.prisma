@@ -23,6 +23,8 @@ model Strategy {
   totalTrades  Int
   netProfit    Float
   winRate      Float
+  maxDrawdown  Float
+
   fileName     String
   fileUrl      String?
   userId       String
