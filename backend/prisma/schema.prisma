@@ -24,6 +24,8 @@ model Strategy {
   netProfit    Float
   winRate      Float
   maxDrawdown  Float
+  initialCapital Float @default(10000)
+  equityAfterTrades Float?
 
   fileName     String
   fileUrl      String?
@@ -37,6 +39,7 @@ model Trade {
   id          String   @id @default(cuid())
   date        DateTime
   netProfit   Float
+  
   strategy    Strategy @relation(fields: [strategyId], references: [id])
   strategyId  String
 }

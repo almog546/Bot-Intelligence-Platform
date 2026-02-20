@@ -76,7 +76,7 @@ export default function Dashboard() {
     }
     
     function calculateEquityCurve(trades) {
-        let equity = 0;
+        let equity = 10000;
         return trades.map(trade => {
             equity += Number(trade.netProfit);
             return {

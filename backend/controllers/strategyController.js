@@ -41,6 +41,7 @@ async function uploadStrategy(req, res) {
     );
 
     const totalTrades = cleanRecords.length;
+  
 
     const netProfit = cleanRecords.reduce(
       (acc, trade) => acc + trade.netProfit,
@@ -59,8 +60,8 @@ async function uploadStrategy(req, res) {
 
     
     function calculateMaxDrawdown(records) {
-      let equity = 0;
-      let peak = 0;
+      let equity = 10000;
+      let peak = 10000;
       let worst = 0;
 
       for (const trade of records) {
@@ -77,6 +78,8 @@ async function uploadStrategy(req, res) {
     }
 
     const maxDrawdown = calculateMaxDrawdown(cleanRecords);
+   
+    
 
     
     const strategy = await prisma.strategy.create({
@@ -88,6 +91,8 @@ async function uploadStrategy(req, res) {
         maxDrawdown,
         fileName: req.file.originalname,
         fileUrl: "",
+        initialCapital: 10000,
+        equityAfterTrades ,
         createdAt: new Date(),
         user: { connect: { id: userId } },
       },
@@ -108,6 +113,8 @@ async function uploadStrategy(req, res) {
       netProfit,
       winRate,
       maxDrawdown,
+      initialCapital: 10000
+
     });
 
   } catch (error) {
@@ -132,6 +139,8 @@ async function getStrategies(req, res) {
             netProfit: true,
             winRate: true,
             maxDrawdown: true,
+            initialCapital: true,
+            equityAfterTrades: true,
             createdAt: true,
             trades: {
                 select: {

@@ -2,6 +2,31 @@ import styles from './strategyPage.module.css';
 import { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { useParams } from 'react-router-dom';
+import { Line } from "react-chartjs-2";
+import dayjs from "dayjs";
+
+
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend,
+  
+} from "chart.js";
+
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend
+  
+);
 
 export default function StrategyPage() {
      const [strategies, setStrategies] = useState([]);
@@ -26,22 +51,23 @@ export default function StrategyPage() {
 
         fetchStrategies();
     }, [id]);
+    const sortedTrades = [...simulationData].sort((a, b) => new Date(a.date) - new Date(b.date));   
     function totalTrades() {
-        return simulationData.length;
+        return sortedTrades.length;
     }
     function totalProfit() {
-        return simulationData.reduce((total, trade) => total + trade.netProfit, 0);
+        return sortedTrades.reduce((total, trade) => total + trade.netProfit, 0);
     }
     function winRate() {
-        const wins = simulationData.filter(trade => trade.netProfit > 0).length;
-        return simulationData.length > 0 ? (wins / simulationData.length) * 100 : 0;
+        const wins = sortedTrades.filter(trade => trade.netProfit > 0).length;
+        return sortedTrades.length > 0 ? (wins / sortedTrades.length) * 100 : 0;
     }
     function maxDrawdown() {
         let peak = -Infinity;
         let maxDD = 0;
-        let equity = 0;
+        let equity = 10000;
 
-        for (const trade of simulationData) {
+        for (const trade of sortedTrades) {
             equity += trade.netProfit;
             if (equity > peak) peak = equity;
             const drawdown = peak - equity;
@@ -51,8 +77,8 @@ export default function StrategyPage() {
     }
   
     function commissionSlippage() {
-        
-        const simulatedtrades = simulationData.map(trade => ({
+        const baseTrades = strategies[0]?.trades ;
+        const simulatedtrades = baseTrades.map(trade => ({
             ...trade,
             netProfit: trade.netProfit - commission - Slippage,
         }));
@@ -61,10 +87,166 @@ export default function StrategyPage() {
     function resetSimulation() {
         setSimulationData([...strategies[0].trades]);
     }
-  
+    function calculateEquityCurve(trades) {
+        let equity = 10000;
+        return trades.map(trade => {
+            equity += Number(trade.netProfit);
+            return {
+                ...trade,
+                equity
+            };
+        });
+    }
+    function drawdownPoints(trades) {
+        let peak = 10000;
+        let equity = 10000;
+        return trades.map(trade => {
+            equity += Number(trade.netProfit);
+            if (equity > peak) peak = equity;
+            const drawdown = peak - equity;
+            return {
+                ...trade,
+                drawdown
+            };
+        }
+        );
+    }
     
-    return (
+    function HistogramData(trades) {
+        const initialCapital = strategies[0]?.initialCapital ?? 10000;
+        if (!trades?.length) {
+            return { percentages: [] };
+        }
+        const percentages = trades.map(trade => (trade.netProfit / initialCapital) * 100);
+        return {
+            percentages,
+           
+        };
+    }
+   
+
+    
+       
+
+              
+        
+
+   
+    
+    const forDrawdown = drawdownPoints(sortedTrades);
+    const allTrades = calculateEquityCurve(simulationData);
+    const startdata = calculateEquityCurve(strategies[0]?.trades || []);
+    const startdataWithDrawdown = drawdownPoints(strategies[0]?.trades || []);
+    const histogramData = HistogramData(strategies[0]?.trades || []);
+    const allhistogramData = HistogramData(simulationData);
+    
+     
+
+
+
+    const histogramConfig = {
+        labels: histogramData.percentages.map((_, index) => `Trade ${index + 1}`),
+        datasets: [
+            {
+                label: "Net Profit % of Initial Capital",
+                data: histogramData.percentages,
+                backgroundColor: histogramData.percentages.map(p => p >= 0 ? "rgba(16, 185, 129, 0.7)" : "rgba(255, 99, 132, 0.7)"),
+            },
+        ],
+    };
+    const histogramConfigSimulated = {
+        labels: allhistogramData.percentages.map((_, index) => `Trade ${index + 1}`),
+        datasets: [
+            {
+                label: "Net Profit % of Initial Capital",
+                data: allhistogramData.percentages,
+                backgroundColor: allhistogramData.percentages.map(p => p >= 0 ? "rgba(16, 185, 129, 0.7)" : "rgba(255, 99, 132, 0.7)"),
+            },
+        ],
+
+    };
+
+
+    const linechartdrawdowmstart = {
+        labels: startdataWithDrawdown.map(trade => new Date(trade.date).toLocaleDateString()),
+        datasets: [
+            {
+                label: "Drawdown",
+                data: startdataWithDrawdown.map(trade => trade.drawdown),
+                fill: true,
+                borderColor: "rgb(255, 99, 132)",
+                 backgroundColor: "rgba(255, 99, 132, 0.2)",
+                tension: 0.1,
+            },
+        ],
+    };
+
+    const linechartdrawdowm = {
+        labels: forDrawdown.map(trade => new Date(trade.date).toLocaleDateString()),
+        datasets: [
+            {
+                label: "Drawdown",
+                data: forDrawdown.map(trade => trade.drawdown),
+                fill: true,
+                borderColor: "rgb(255, 99, 132)",
+                 backgroundColor: "rgba(255, 99, 132, 0.2)",
+                tension: 0.1,
+            },
+        ],
+    };
+    const equityCurveDataStart = {
+        labels: startdata.map(trade => new Date(trade.date).toLocaleDateString()),
+        datasets: [
+            {
+                label: "Equity Curve",
+                data: startdata.map(trade => trade.equity),
+                fill: false,
+                borderColor: "rgb(75, 192, 192)",
+                tension: 0.1,
+            },
+        ],
+    };
+    
+    const equityCurveData = {
+        labels: allTrades.map(trade => new Date(trade.date).toLocaleDateString()),
+        datasets: [
+            {
+                label: "Equity Curve",
+                data: allTrades.map(trade => trade.equity),
+                fill: false,
+                borderColor: "rgb(75, 192, 192)",
+                tension: 0.1,
+            },
+        ],
+    };
+    const equityCurveOptions = {
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+        },
+        scales: {
+            y: { grid: { color: '#f1f5f9' } },
+            x: { grid: { display: false } }
+        }
+    };
+    
+    const histogramConfigOptions = {
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+        },
+        scales: {
+            y: { grid: { color: '#f1f5f9' } },
+            x: { grid: { display: false } }
+        }
+    };
+    
+
+
+
+    return (<>
         <div className={styles.container}>
+            <div className={styles.strategyList}>
             {strategies.map(strategy => (
                 <div key={strategy.id} className={styles.strategyCard}>
                     <h3>{strategy.name}</h3>
@@ -77,10 +259,29 @@ export default function StrategyPage() {
                     <p>Total Profit: ${strategy.netProfit.toFixed(2)}</p>
                     <p>Win Rate: {strategy.winRate.toFixed(2)}%</p>
                     <p>Max Drawdown: ${strategy.maxDrawdown.toFixed(2)}</p>
+                        
                    
                     
                 </div>
             ))}
+           
+            <div className={styles.chartContaineroriginal}>
+                <h2>Original Equity Curve</h2>
+                <div className={styles.chartWrapperoriginal}>
+                <Line data={equityCurveDataStart} options={equityCurveOptions} />
+                </div>
+                <h2>Original Drawdown</h2>
+                <div className={styles.chartWrapperoriginal}>
+                <Line data={linechartdrawdowmstart} options={equityCurveOptions} />
+                </div>
+                    <h2>Net Profit % of Initial Capital per Trade</h2>
+                    <div className={styles.chartWrapperoriginal}>
+                    <Line data={histogramConfig} options={histogramConfigOptions} />
+                    </div>
+
+            </div>
+            
+            </div>
             <div className={styles.simulation}>
             <h1>Simulation Settings</h1>
             <form action="" className={styles.simulationForm} onSubmit={(e) => {
@@ -113,9 +314,24 @@ export default function StrategyPage() {
             <p>Max Drawdown: ${maxDrawdown().toFixed(2)}</p>
             </div>
             <button className={styles.resetButton} onClick={resetSimulation}>Reset Simulation</button>
-            
-         
             </div>
+            <div className={styles.chartContainer}>
+            <h2>Equity Curve</h2>
+            <div className={styles.chartWrapper}>
+            <Line data={equityCurveData} options={equityCurveOptions} />
+            
+            </div>
+                <h2>Drawdown</h2>
+                <div className={styles.chartWrapper}>
+                <Line data={linechartdrawdowm} options={equityCurveOptions} />
+                </div>
+
+                <h2>Net Profit % of Initial Capital per Trade</h2>
+            <div className={styles.chartWrapper}>
+                <Line data={histogramConfigSimulated} options={histogramConfigOptions} />
+            </div>
+            </div>
+            
         </div>
-    );
+    </>);
 }
