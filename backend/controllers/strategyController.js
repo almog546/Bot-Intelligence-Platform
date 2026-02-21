@@ -41,12 +41,15 @@ async function uploadStrategy(req, res) {
     );
 
     const totalTrades = cleanRecords.length;
+    const initialCapital = 10000;
   
 
     const netProfit = cleanRecords.reduce(
       (acc, trade) => acc + trade.netProfit,
       0
     );
+
+    const equityAfterTrades = initialCapital + netProfit;
 
     const winTrades = cleanRecords.filter(
       trade => trade.netProfit > 0
@@ -91,8 +94,8 @@ async function uploadStrategy(req, res) {
         maxDrawdown,
         fileName: req.file.originalname,
         fileUrl: "",
-        initialCapital: 10000,
-        equityAfterTrades ,
+        initialCapital,
+        equityAfterTrades,
         createdAt: new Date(),
         user: { connect: { id: userId } },
       },
@@ -113,7 +116,8 @@ async function uploadStrategy(req, res) {
       netProfit,
       winRate,
       maxDrawdown,
-      initialCapital: 10000
+      initialCapital,
+      equityAfterTrades
 
     });
 
