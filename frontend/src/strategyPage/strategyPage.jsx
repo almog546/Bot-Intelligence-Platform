@@ -177,6 +177,8 @@ export default function StrategyPage() {
         }
         return grouped;
     }
+   
+  
 
               
         
@@ -193,9 +195,13 @@ export default function StrategyPage() {
     const expectancyStartdata = Expectancy(strategies[0]?.trades || []);
     const groupedByMonth = groupbymonth(simulationData);
     const groupedByMonthStart = groupbymonth(strategies[0]?.trades || []);
+   
 
 
+    
 
+
+     
 
     const barChartData = {
         labels: Object.keys(groupedByMonth).sort(),
@@ -455,6 +461,10 @@ export default function StrategyPage() {
                 <Bar data={barChartData} options={barChartOptions} />
                 </div>
                 </div>
+            </div>
+            <div className={styles.monteCarlo}>
+                <h2>Monte Carlo Simulation</h2>
+                
             </div>
             
         </div>
