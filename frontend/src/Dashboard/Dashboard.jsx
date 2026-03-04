@@ -113,9 +113,14 @@ export default function Dashboard() {
             x: { grid: { display: false } }
         }
     };
-
-
-
+   async function deleteStrategy(id) {
+        try {
+            await api.delete(`/api/strategies/${id}`);
+            setStrategies(prevStrategies => prevStrategies.filter(strategy => strategy.id !== id));
+        } catch (err) {
+            console.error('Failed to delete strategy:', err);
+        }
+    }
 
     
 
@@ -150,7 +155,7 @@ export default function Dashboard() {
                 
             )}
             {strategies.map((strategy) => (
-                <div key={strategy.id} className={styles.strategyCard} onClick={() => navigate(`/strategy/${strategy.id}`)}>
+                <div key={strategy.id} className={styles.strategyCard} >
                     <h2>{strategy.name}</h2>
                     <p>Total Trades: {strategy.totalTrades}</p>
                     <p>Net Profit: ${strategy.netProfit.toFixed(2)}</p>
@@ -158,6 +163,9 @@ export default function Dashboard() {
                     <p>Max Drawdown: {strategy.maxDrawdown.toFixed(2)}</p> 
 
                     <p>Created At: {new Date(strategy.createdAt).toLocaleDateString()}</p>
+                    <button onClick={() => navigate(`/strategy/${strategy.id}`)} className={styles.openButton}>Open Strategy Page</button>
+                    <button onClick={() => deleteStrategy(strategy.id)} className={styles.deleteButton}>Delete</button>
+                    
                     
                 </div>
                 

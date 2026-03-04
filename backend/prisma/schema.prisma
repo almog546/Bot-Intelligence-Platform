@@ -40,6 +40,6 @@ model Trade {
   date        DateTime
   netProfit   Float
   
-  strategy    Strategy @relation(fields: [strategyId], references: [id])
+  strategy    Strategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
   strategyId  String
 }

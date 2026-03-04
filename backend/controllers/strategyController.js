@@ -189,10 +189,37 @@ async function getStrategy(req, res) {
 
     res.json(strategy);
 }
+async function deleteStrategy(req, res) {
+    const { id } = req.params;
+    const userId = req.session.userId;
+    try {
+      if (!userId) {
+        return res.status(401).json({ message: 'Not authenticated' });
+    }
+        const strategy = await prisma.strategy.findUnique({
+            where: { id },
+        });
+        if (!strategy) {
+            return res.status(404).json({ message: 'Strategy not found' });
+        }
+        await prisma.trade.deleteMany({
+          where: { strategyId: id },
+        });
+        await prisma.strategy.delete({
+            where: { id },
+        });
+
+        res.status(200).json({ message: 'Strategy deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
+    }
+}
 
 module.exports = {
     getStrategies,
     uploadStrategy,
     getStrategyTrades,
     getStrategy,
+    deleteStrategy,
 };
