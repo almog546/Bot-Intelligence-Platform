@@ -1,10 +1,31 @@
 import styles from './Compare.module.css';
 import { useState, useEffect } from 'react';
 import api from '../api/axios';
+import { Line } from "react-chartjs-2";
+
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend,
+  
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend
+  
+);
 
 export default function Compare() {
     const [strategies, setStrategies] = useState([]);
-
     const [selectedStrategies, setSelectedStrategies] = useState([]);
 
     useEffect(() => {
@@ -29,7 +50,73 @@ export default function Compare() {
         }
       
     }
-  
+    function calculateEquityCurve(trades) {
+        let equity = 10000; 
+        let numberOfTrades = 0;
+        const sortedTrades = trades.sort((a, b) => new Date(a.date) - new Date(b.date));
+        return sortedTrades.map(trade => {
+            numberOfTrades++;
+            equity += Number(trade.netProfit);
+            return {
+                numberOfTrades,
+                equity,
+            };
+        });
+    }
+
+    function maxNumberOfTrades() {
+        return Math.max(...strategies.map(s => s.totalTrades || 0));
+    }
+   
+    const maxTrades = maxNumberOfTrades(); 
+ 
+
+
+     const chartData = {
+        labels: Array.from({ length: maxTrades }, (_, i) => i + 1),
+        datasets: selectedStrategies.map(id => {
+            const strategy = strategies.find(s => s.id === id);
+            const strategyTrades = strategy.trades || [];
+            const equityCurve = calculateEquityCurve(strategyTrades);
+            return {
+                label: strategy.name,
+                data: equityCurve.map(point => point.equity),
+                fill: false,
+                borderColor: `hsl(${Math.random() * 360}, 70%, 50%)`,
+                tension: 0.1,
+            };
+        }),
+    };
+            
+    const chartOptions = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: 'Equity Curve Comparison',
+            },
+        },
+        scales: {
+            x: {
+                title: {
+                    display: true,
+                    text: 'Number of Trades',
+                },
+            },
+            y: {
+                title: {
+                    display: true,
+                    text: 'Equity ($)',
+                },
+            },
+        },
+    };
+        
+       
+
 
     return (<>
         <div className={styles.container}>
@@ -55,12 +142,17 @@ export default function Compare() {
                             return (<div key={id} className={styles.strategyComparisonCard}>
                                 <h4>{strategy.name}</h4>
                                 <p>Total Trades: {strategy.totalTrades}</p>
-                                <p>Net Profit: ${strategy.netProfit.toFixed(2)}</p>
+                                <p style={{ color: strategy.netProfit >= 0 ? 'green' : 'red' }}>Net Profit: ${strategy.netProfit.toFixed(2)}</p>
                                 <p>Win Rate: {strategy.winRate.toFixed(2)}%</p>
                                 <p>Max Drawdown: {strategy.maxDrawdown.toFixed(2)}</p>
+                               
+                                
                                 
                             </div>);
                         })}
+                         
+                        <Line data={chartData} options={chartOptions} />
+                        
                     </div>
                 
                 </div>

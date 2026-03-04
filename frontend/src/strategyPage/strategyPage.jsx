@@ -177,14 +177,17 @@ export default function StrategyPage() {
         }
         return grouped;
     }
-   
+    function monteCarloSimulation(trades, iterations = 1000) {
+        const equityCurves = [];
+     
   
 
               
         
 
    
-    
+    }
+
     const forDrawdown = drawdownPoints(sortedTrades);
     const allTrades = calculateEquityCurve(simulationData);
     const startdata = calculateEquityCurve(strategies[0]?.trades || []);
