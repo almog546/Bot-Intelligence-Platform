@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
-import styles from "./AddStrategy.module.css";
+import styles from "./addStrategy.module.css";
 
 export default function UploadStrategy() {
   const [selectedFile, setSelectedFile] = useState(null);
