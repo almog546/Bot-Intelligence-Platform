@@ -13,7 +13,7 @@ app.use(
 );
 
 
-app.options("/*", cors({ origin: true, credentials: true }));
+
 
 app.set("trust proxy", 1);
 
