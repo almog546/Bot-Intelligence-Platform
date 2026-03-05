@@ -152,10 +152,13 @@ export default function Compare() {
                                 
                             </div>);
                         })}
-                         
-                        <Line data={chartData} options={chartOptions} />
+                       
                         
+                      
                     </div>
+                    
+                    <Line data={chartData} options={chartOptions} />
+                  
                 
                 </div>
             </div>
