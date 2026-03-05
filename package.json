@@ -1,8 +1,11 @@
 {
   "dependencies": {
+    "@react-pdf/renderer": "^4.3.2",
     "chart.js": "^4.5.1",
     "dayjs": "^1.11.19",
     "html2pdf.js": "^0.14.0",
+    "jspdf": "^4.2.0",
+    "jspdf-autotable": "^5.0.7",
     "multer": "^2.0.2",
     "react-chartjs-2": "^5.3.1"
   }

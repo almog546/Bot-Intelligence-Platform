@@ -5,7 +5,8 @@ import { useParams } from 'react-router-dom';
 import { Line } from "react-chartjs-2";
 import { Bar } from "react-chartjs-2";
 import dayjs from "dayjs";
-import html2pdf from "html2pdf.js";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 
 import {
@@ -181,29 +182,7 @@ export default function StrategyPage() {
     function monteCarloSimulation(trades, iterations = 1000) {
         const equityCurves = [];
     }
-    function handleDownloadPdf () {
-        const element = document.getElementById('pdf-content');
-        const opt = {
-    margin: [0.4, 0.4, 0.4, 0.4],
-    filename: `strategy-simulation-${dayjs().format('YYYY-MM-DD')}.pdf`,
-    image: { type: 'jpeg', quality: 1 },
-    html2canvas: { 
-        scale: 3,
-        useCORS: true,
-        scrollX: 0,
-        scrollY: 0,
-        windowWidth: document.getElementById('pdf-content').scrollWidth,
-    },
-    jsPDF: { 
-        unit: 'in', 
-        format: 'a4', 
-        orientation: 'landscape'
-    },
-     pagebreak: { mode: ['avoid-all', 'css'] },
-};
-       
-        html2pdf().set(opt).from(element).save();
-    }
+   
 
     const forDrawdown = drawdownPoints(sortedTrades);
     const allTrades = calculateEquityCurve(simulationData);
@@ -372,11 +351,49 @@ export default function StrategyPage() {
             x: { grid: { display: false } }
         }
     };
+    function downloadPDF() {
+  const doc = new jsPDF();
+    const rows = [
+        ["Total Trades", totalTrades()],
+        ["Total Profit", `$${totalProfit().toFixed(2)}`],
+        ["Win Rate", `${winRate().toFixed(2)}%`],
+        ["Max Drawdown", `$${maxDrawdown().toFixed(2)}`],
+        ["Expectancy per Trade", `$${expectancy.toFixed(2)}`],
+        ["Average Win", `$${AvgWin(simulationData).toFixed(2)}`],
+        ["Average Loss", `$${AvgLoss(simulationData).toFixed(2)}`],
+        ["Longest Winning Streak", `${longestWinningStreak(simulationData)} trades`],
+        ["Longest Losing Streak", `${longestlosingStreak(simulationData)} trades`],
+    ];
+    const originalRows = [
+        ["Total Trades", strategies[0]?.totalTrades ?? 0],
+        ["Total Profit", `$${strategies[0]?.netProfit.toFixed(2) ?? 0}`],
+        ["Win Rate", `${strategies[0]?.winRate.toFixed(2) ?? 0}%`],
+        ["Max Drawdown", `$${strategies[0]?.maxDrawdown.toFixed(2) ?? 0}`],
+        ["Expectancy per Trade", `$${expectancyStartdata.toFixed(2)}`],
+        ["Average Win", `$${AvgWin(strategies[0]?.trades || []).toFixed(2)}`],
+        ["Average Loss", `$${AvgLoss(strategies[0]?.trades || []).toFixed(2)}`],
+        ["Longest Winning Streak", `${longestWinningStreak(strategies[0]?.trades || [])} trades`],
+        ["Longest Losing Streak", `${longestlosingStreak(strategies[0]?.trades || [])} trades`],
+    ];
+    doc.text("Simulation Results", 14, 10);
+    autoTable(doc, {
+        head: [['Metric', 'Value']],
+        body: rows,
+    });
+        doc.addPage();
+    autoTable(doc, {
+        
+        head: [['Metric', 'Value']],
+        body: originalRows,
+    });
+    doc.save('simulation_results.pdf');
+
+}
     
 
 
 
-    return (<><div id="pdf-content" className={styles.pdfContent}>
+    return (<><div  className={styles.pdfContent}>
         <div className={styles.container}>
             
             <div className={styles.strategyList}>
@@ -427,7 +444,7 @@ export default function StrategyPage() {
             </div>
             
             </div>
-            
+            <div >
             <div className={styles.simulation} >
             <h1>Simulation Settings</h1>
             <form action="" className={styles.simulationForm} onSubmit={(e) => {
@@ -464,11 +481,13 @@ export default function StrategyPage() {
             <p>Longest Winning Streak: {longestWinningStreak(simulationData)} trades</p>
             <p>Longest Losing Streak: {longestlosingStreak(simulationData)} trades</p>
             </div>
+           
             <div className={styles.simulationActions}>
-            <button className={styles.exportButton} onClick={handleDownloadPdf}>Export Simulation Data</button>
+            <button className={styles.exportButton} onClick={downloadPDF}>Export Simulation Data</button>
             <button className={styles.resetButton} onClick={resetSimulation}>Reset Simulation</button>
             </div>
             </div>
+             </div>
             <div className={styles.chartContainer}>
                 <div className={styles.chartEquityWrapper}>
                     
