@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import { Line } from "react-chartjs-2";
 import { Bar } from "react-chartjs-2";
 import dayjs from "dayjs";
+import html2pdf from "html2pdf.js";
 
 
 import {
@@ -179,13 +180,29 @@ export default function StrategyPage() {
     }
     function monteCarloSimulation(trades, iterations = 1000) {
         const equityCurves = [];
-     
-  
-
-              
-        
-
-   
+    }
+    function handleDownloadPdf () {
+        const element = document.getElementById('pdf-content');
+        const opt = {
+    margin: [0.4, 0.4, 0.4, 0.4],
+    filename: `strategy-simulation-${dayjs().format('YYYY-MM-DD')}.pdf`,
+    image: { type: 'jpeg', quality: 1 },
+    html2canvas: { 
+        scale: 3,
+        useCORS: true,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: document.getElementById('pdf-content').scrollWidth,
+    },
+    jsPDF: { 
+        unit: 'in', 
+        format: 'a4', 
+        orientation: 'landscape'
+    },
+     pagebreak: { mode: ['avoid-all', 'css'] },
+};
+       
+        html2pdf().set(opt).from(element).save();
     }
 
     const forDrawdown = drawdownPoints(sortedTrades);
@@ -282,6 +299,8 @@ export default function StrategyPage() {
                 borderColor: "rgb(255, 99, 132)",
                  backgroundColor: "rgba(255, 99, 132, 0.2)",
                 tension: 0.1,
+                pointRadius: 0,
+                 borderWidth: 2,
             },
         ],
     };
@@ -296,6 +315,9 @@ export default function StrategyPage() {
                 borderColor: "rgb(255, 99, 132)",
                  backgroundColor: "rgba(255, 99, 132, 0.2)",
                 tension: 0.1,
+                pointRadius: 0,
+                 borderWidth: 2,
+
             },
         ],
     };
@@ -307,6 +329,8 @@ export default function StrategyPage() {
                 data: startdata.map(trade => trade.equity),
                 fill: false,
                 borderColor: "rgb(75, 192, 192)",
+                borderWidth: 2,
+                 pointRadius: 0, 
                 tension: 0.1,
             },
         ],
@@ -320,6 +344,9 @@ export default function StrategyPage() {
                 data: allTrades.map(trade => trade.equity),
                 fill: false,
                 borderColor: "rgb(75, 192, 192)",
+                borderWidth: 2,
+                    pointRadius: 0,
+                
                 tension: 0.1,
             },
         ],
@@ -349,8 +376,9 @@ export default function StrategyPage() {
 
 
 
-    return (<>
+    return (<><div id="pdf-content" className={styles.pdfContent}>
         <div className={styles.container}>
+            
             <div className={styles.strategyList}>
             {strategies.map(strategy => (
                 <div key={strategy.id} className={styles.strategyCard}>
@@ -399,7 +427,8 @@ export default function StrategyPage() {
             </div>
             
             </div>
-            <div className={styles.simulation}>
+            
+            <div className={styles.simulation} >
             <h1>Simulation Settings</h1>
             <form action="" className={styles.simulationForm} onSubmit={(e) => {
                 e.preventDefault();
@@ -435,10 +464,14 @@ export default function StrategyPage() {
             <p>Longest Winning Streak: {longestWinningStreak(simulationData)} trades</p>
             <p>Longest Losing Streak: {longestlosingStreak(simulationData)} trades</p>
             </div>
+            <div className={styles.simulationActions}>
+            <button className={styles.exportButton} onClick={handleDownloadPdf}>Export Simulation Data</button>
             <button className={styles.resetButton} onClick={resetSimulation}>Reset Simulation</button>
+            </div>
             </div>
             <div className={styles.chartContainer}>
                 <div className={styles.chartEquityWrapper}>
+                    
             <h2>Equity Curve</h2>
             <div className={styles.chartWrapper}>
             <Line data={equityCurveData} options={equityCurveOptions} />
@@ -464,11 +497,10 @@ export default function StrategyPage() {
                 <Bar data={barChartData} options={barChartOptions} />
                 </div>
                 </div>
-            </div>
-            <div className={styles.monteCarlo}>
-                <h2>Monte Carlo Simulation</h2>
                 
             </div>
+            </div>
+           
             
         </div>
     </>);

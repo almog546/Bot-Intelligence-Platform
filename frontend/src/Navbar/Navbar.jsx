@@ -17,7 +17,7 @@ export default function Navbar({ onLogout }) {
             <div className={styles.links}>
                 <Link to="/" className={styles.link}>Dashboard</Link>
                 <Link to="/compare" className={styles.link}>Compare</Link>
-                <Link to="/settings" className={styles.link}>Settings</Link>
+                
                 <button onClick={onLogout} className={styles.logoutButton}>Logout</button>
             </div>
             <div className={styles.mobileMenu}>

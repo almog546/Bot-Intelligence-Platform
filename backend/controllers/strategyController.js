@@ -1,5 +1,7 @@
 const prisma = require('../prismaClient');
-const csv = require("csv-parse/sync"); 
+const csv = require("csv-parse/sync");
+const { mapAliases } = require('../utils/aliasMap');
+
 
 async function uploadStrategy(req, res) {
   try {
@@ -19,10 +21,13 @@ async function uploadStrategy(req, res) {
     });
 
     
-    const normalizedRecords = records.map(row => ({
-      date: row.date,
-      netProfit: Number(row.netprofit),
-    }));
+    const normalizedRecords = records.map(row => {
+      const mappedRow = mapAliases(row);
+      return {
+        date: mappedRow.date,
+        netProfit: Number(mappedRow.netProfit),
+      };
+    });
 
     
     const cleanRecords = normalizedRecords.filter(

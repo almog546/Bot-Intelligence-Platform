@@ -84,6 +84,8 @@ export default function Compare() {
                 fill: false,
                 borderColor: `hsl(${Math.random() * 360}, 70%, 50%)`,
                 tension: 0.1,
+                    pointRadius: 0,
+                        borderWidth: 2,
             };
         }),
     };

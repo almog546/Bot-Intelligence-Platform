@@ -98,7 +98,8 @@ export default function Dashboard() {
                borderColor: "#10b981",
                 backgroundColor: "rgba(16, 185, 129, 0.1)",
                 tension: 0.4, 
-               
+                pointRadius: 0,
+                 borderWidth: 2,
             },
         ],
     };
