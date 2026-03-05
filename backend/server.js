@@ -12,6 +12,9 @@ app.use(
     }),
 );
 
+
+app.set("trust proxy", 1);
+
 app.use(
     session({
         name: 'sid',
@@ -20,11 +23,12 @@ app.use(
         saveUninitialized: false,
         cookie: {
             httpOnly: true,
-            sameSite: 'lax',
-            secure: false,
+            sameSite: 'none', 
+            secure: true,     
         },
     }),
 );
+
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use("/api/strategies", require("./routes/strategyRoutes"));
 
